@@ -1,21 +1,24 @@
 import cv2
 import numpy as np
 import imutils
+from matplotlib import pyplot as plt
 tor_film=cv2.VideoCapture("mov/mov_4.mp4")
 kernel=np.ones((5,5),np.uint8)
-
+i=0
 while(1):
+    i+=1
     left_rail_start = 1280
     right_rail_start=0
     ret,frame=tor_film.read()
     img = imutils.resize(frame, width=1280,height=720)
+    org_img=img
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), cv2.BORDER_DEFAULT)
     edges = cv2.Canny(blur, 230, 250)
     dilate=cv2.dilate(edges,kernel,iterations=2)
     erode=cv2.erode(dilate,kernel,iterations=2)
     lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 70,minLineLength=200,maxLineGap=100)
-    cv2.imshow('krawedzie', edges)
+    #cv2.imshow('krawedzie', edges)
     for line in lines:
         x1, y1, x2, y2 = line[0]
         if x1<left_rail_start and x1>150:
@@ -26,8 +29,11 @@ while(1):
             right_rail_start=x2
         cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 3)
     img_crop = img[150:719, left_rail_start - 20:right_rail_start+20]
-    cv2.imshow('tory', img)
+    org_img_crop = org_img[150:719, left_rail_start - 20:right_rail_start+20]
+    #cv2.imshow('tory', img)
     cv2.imshow('szyny',img_crop)
+
+
     area = 0.0
     hsv_img_crop = cv2.cvtColor(img_crop, cv2.COLOR_BGR2HSV)
     lower_green = np.array([40, 70, 80])
@@ -40,7 +46,9 @@ while(1):
     print(area)
     cv2.drawContours(img_crop, contours, -1, (0, 0, 255), 3)
     cv2.imshow('zielony', img_crop)
-
+    if i%30==0:
+        plt.hist(org_img_crop.ravel(), 256, [0, 256])
+        plt.show()
 
 
     if cv2.waitKey(1)==27:
