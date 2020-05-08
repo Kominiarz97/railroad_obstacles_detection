@@ -2,20 +2,30 @@ import cv2
 import numpy as np
 import imutils
 tor_film=cv2.VideoCapture("mov/mov_4.mp4")
+kernel=np.ones((5,5),np.uint8)
 
 while(1):
+    left_rail_start = 1280
     ret,frame=tor_film.read()
-    img = imutils.resize(frame, height=800)
+    img = imutils.resize(frame, width=1280,height=720)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), cv2.BORDER_DEFAULT)
     edges = cv2.Canny(blur, 230, 250)
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 120,maxLineGap=120)
-    cv2.imshow('torr', edges)
+    dilate=cv2.dilate(edges,kernel,iterations=2)
+    erode=cv2.erode(dilate,kernel,iterations=2)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 70,minLineLength=200,maxLineGap=100)
+    cv2.imshow('krawedzie', edges)
     for line in lines:
         x1, y1, x2, y2 = line[0]
-        cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 5)
+        if x1<left_rail_start and x1>150:
+            left_rail_start=x1
+        cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 3)
+    img_crop=img[0:719,left_rail_start-100:left_rail_start+250]
+    cv2.imshow('tory', img)
+    cv2.imshow('szyny',img_crop)
 
-    cv2.imshow('tor', img)
+
+
     if cv2.waitKey(1)==27:
         break
 tor_film.release()
