@@ -28,6 +28,18 @@ while(1):
     img_crop = img[150:719, left_rail_start - 20:right_rail_start+20]
     cv2.imshow('tory', img)
     cv2.imshow('szyny',img_crop)
+    area = 0.0
+    hsv_img_crop = cv2.cvtColor(img_crop, cv2.COLOR_BGR2HSV)
+    lower_green = np.array([40, 70, 80])
+    upper_green = np.array([70, 255, 255])
+    mask = cv2.inRange(hsv_img_crop, lower_green, upper_green)
+    cv2.imshow('maska', mask)
+    contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[0]
+    for contour in contours:
+        area += cv2.contourArea(contour)
+    print(area)
+    cv2.drawContours(img_crop, contours, -1, (0, 0, 255), 3)
+    cv2.imshow('zielony', img_crop)
 
 
 
