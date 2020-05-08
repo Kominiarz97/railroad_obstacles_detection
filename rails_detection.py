@@ -6,6 +6,7 @@ kernel=np.ones((5,5),np.uint8)
 
 while(1):
     left_rail_start = 1280
+    right_rail_start=0
     ret,frame=tor_film.read()
     img = imutils.resize(frame, width=1280,height=720)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -19,8 +20,12 @@ while(1):
         x1, y1, x2, y2 = line[0]
         if x1<left_rail_start and x1>150:
             left_rail_start=x1
+        if x1 > right_rail_start and x1>left_rail_start:
+            right_rail_start = x1
+        elif x2 > right_rail_start and x2>left_rail_start:
+            right_rail_start=x2
         cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 3)
-    img_crop=img[0:719,left_rail_start-100:left_rail_start+250]
+    img_crop = img[150:719, left_rail_start - 20:right_rail_start+20]
     cv2.imshow('tory', img)
     cv2.imshow('szyny',img_crop)
 
