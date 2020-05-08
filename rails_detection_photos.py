@@ -3,7 +3,7 @@ import numpy as np
 import imutils
 org_img=cv2.imread('photos/9.jpg')
 kernel=np.ones((5,5),np.uint8)
-
+area=0.0
 
 
 left_rail_start = 600
@@ -33,7 +33,13 @@ lower_green=np.array([40,70,80])
 upper_green=np.array([70,255,255])
 mask=cv2.inRange(hsv_img_crop,lower_green,upper_green)
 cv2.imshow('maska',mask)
+contours=cv2.findContours(mask.copy(),cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)[0]
+for contour in contours:
+    area+=cv2.contourArea(contour)
+print(area)
+cv2.drawContours(img_crop,contours,-1,(0,0,255),3)
 
+cv2.imshow('zielony',img_crop)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
