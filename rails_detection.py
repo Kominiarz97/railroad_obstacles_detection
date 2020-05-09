@@ -13,9 +13,25 @@ def green_detection(img_crop):
     contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[0]
     for contour in contours:
         area += cv2.contourArea(contour)
-    print(area)
-    cv2.drawContours(img_crop, contours, -1, (0, 0, 255), 3)
+    #print(area)
+    cv2.drawContours(img_crop, contours, -1, (0, 0, 255), 1)
     cv2.imshow('zielony', img_crop)
+    return mask
+
+def rail_detection(img):
+    area = 0.0
+    hsv_img_crop = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    lower_white = np.array([0, 0, 200])
+    upper_white = np.array([255, 50, 255])
+    mask = cv2.inRange(hsv_img_crop, lower_white, upper_white)
+    cv2.imshow('massska', mask)
+    contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[0]
+    for contour in contours:
+        area += cv2.contourArea(contour)
+    print(area)
+    cv2.drawContours(img, contours, -1, (0, 0, 255), 1)
+    cv2.imshow('zielony', img)
+
 
 tor_film=cv2.VideoCapture("mov/mov_4.mp4")
 kernel=np.ones((5,5),np.uint8)
@@ -50,17 +66,23 @@ while(1):
                 rail_top_y=y1
             elif y2<rail_top_y and y2<y1:
                 rail_top_y=y2
-            cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 3)
+            cv2.line(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
         img_crop = img[rail_top_y:719, left_rail_bot - 20:right_rail_bot + 20]
         img_crop=imutils.resize(img_crop,width=200,height=600)
         org_img_crop = org_img[rail_top_y:719, left_rail_bot - 20:right_rail_bot + 20]
-        org_img_crop = imutils.resize(org_img_crop, 200, 300)
+        org_img_crop = imutils.resize(org_img_crop, 200, 600)
         cv2.imshow('tory', org_img_crop)
         cv2.imshow('szyny',img_crop)
-        green_detection(img_crop)
-        if i % 30 == 0:
-            plt.hist(org_img_crop.ravel(), 256, [0, 256])
+
+        mask=green_detection(img_crop)
+        if i % 830 == 0:
+            hist = cv2.calcHist([org_img_crop], [0], None, [256], [0, 256])
+            plt.plot(hist)
             plt.show()
+        rails = cv2.bitwise_and(org_img_crop,org_img_crop, mask=mask)
+        cv2.imshow("makao",rails)
+        rails=rails[rail_top_y+100:rail_top_y+200,:]
+        rail_detection(rails)
 
     if cv2.waitKey(1) == 27:
             break
